@@ -83,23 +83,6 @@ func NewRBT(comparator Comparator, dumper Dumper) *RBT {
 	return rbt
 }
 
-/*
-as_err_t
-rbt_fini(
-    RBT **rbt)
-{
-    if ( !rbt || !*rbt )
-        return AS_EINVAL;
-
-    if ( !rbt_is_empty(*rbt) )
-        return AS_ENOTEMPTY;
-
-    free(*rbt);
-    *rbt = NULL;
-    return AS_OK;
-}
-*/
-
 func rbtSize(node *RBTNode) uint32 {
 	if node == nil {
 		return 0
@@ -183,7 +166,6 @@ func rbtPut(node *RBTNode, key interface{}, value interface{}, comparator Compar
 	}
 
 	cmp := comparator.Compare(key, node.key)
-	//fmt.Printf("cmp=%d\n", cmp)
 	if cmp < 0 {
 		node.left = rbtPut(node.left, key, value, comparator)
 	} else if cmp > 0 {
@@ -496,9 +478,6 @@ func rbtDelete(node *RBTNode, key interface{}, comparator Comparator) *RBTNode {
 			node = moveRedRight(node)
 		}
 		if comparator.Compare(key, node.key) == 0 {
-			/*x := rbtMin(node.right)
-			node.key = x.key
-			node.value = x.value */
 			node.right, node.key, node.value = rbtDelete_min(node.right)
 		} else {
 			node.right = rbtDelete(node.right, key, comparator)
