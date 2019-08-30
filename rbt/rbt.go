@@ -1,5 +1,12 @@
 /*
 
+rbt.go
+
+An implementation of a Red-Black Tree.
+For each RBT there is two interface that should be implemented:
+  - A comparator interface to compare two nodes in RBT.
+  - A dumper interface to dump RBT for debugging.
+
 MIT License
 
 Copyright (c) 2018 rezamirz
@@ -21,10 +28,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-rbt.go
-
-An implementation of a Red-Black tree
 
 */
 

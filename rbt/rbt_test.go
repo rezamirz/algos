@@ -37,14 +37,13 @@ type IntComparator struct{}
 func (ic *IntComparator) Compare(k1, k2 interface{}) int {
 	i1, ok := k1.(*int)
 	if !ok {
-		return 0
+		panic(fmt.Errorf("Type assersion failed in IntComparator"))
 	}
 
 	i2, ok := k2.(*int)
 	if !ok {
-		return 0
+		panic(fmt.Errorf("Type assersion failed in IntComparator"))
 	}
-	//fmt.Printf("i1=%d, i2=%d\n", *i1, *i2)
 
 	if *i1 > *i2 {
 		return 1

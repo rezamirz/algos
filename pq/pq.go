@@ -31,7 +31,7 @@ type PriorityQueue interface {
 	Dequeue() (string, int64, error)
 }
 
-type Comparator interface {
+type IntComparator interface {
 	/*
 	 * Compares two keys and returns -1, 0, or 1.
 	 * The return value is used to sort the keys.
@@ -89,7 +89,7 @@ type HashedPQ struct {
 	n        int // Number of elements in PQ
 	capacity int
 
-	comparator Comparator
+	comparator IntComparator
 }
 
 func NewHashedPQ(pqType PQType, capacity int) PriorityQueue {
