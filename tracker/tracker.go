@@ -32,9 +32,10 @@ import "fmt"
 
 type Tracker struct {
 	size          uint64 /* Number of bits of bitmap in tracker */
-	nextLowcontig uint64 /* Lowcontig id that has been tracked */
+	nextLowcontig uint64 /* Next lowest contiguous id that has been tracked */
 	startIndex    uint64 /* Start index of the IDs */
 	bitmap        []byte
+	nCopy         int
 }
 
 // NewTracker creates a tracker
@@ -46,7 +47,7 @@ func NewTracker(size uint64, nextLowcontig uint64) *Tracker {
 		startIndex:    nextLowcontig,
 	}
 
-	t.bitmap = make([]byte, size)
+	t.bitmap = make([]byte, size/8+1)
 	return t
 }
 
@@ -57,7 +58,7 @@ func NewTracker(size uint64, nextLowcontig uint64) *Tracker {
 // would make space to track new IDs.
 func (tracker *Tracker) Track(id uint64) error {
 
-	/* It is already tracked */
+	// It is already tracked
 	if id < tracker.nextLowcontig {
 		return nil
 	}
@@ -67,13 +68,13 @@ func (tracker *Tracker) Track(id uint64) error {
 		return fmt.Errorf("Index out of range")
 	}
 
-	/* Now index becomes a byte index inside the bitmap */
+	// Now index becomes a byte index inside the bitmap
 	index = index / 8
 
 	tracker.bitmap[index] = tracker.bitmap[index] | 1<<((id-tracker.startIndex)%8)
 
 	if id == tracker.nextLowcontig {
-		/* Advance the index until all bits in a byte are set */
+		// Advance the index until all bits in a byte are set
 		for tracker.bitmap[index] == 0xFF {
 			index++
 		}
@@ -87,15 +88,15 @@ func (tracker *Tracker) Track(id uint64) error {
 		tracker.nextLowcontig = tracker.startIndex + index*8 + bitIndex
 	}
 
-	/* If atleast a quarter of tracker has already been tracked, shift the bitmap.
-	 * Exact formula: lowcontig >= size/4
-	 */
+	// If at least a quarter of tracker has already been tracked, shift the bitmap.
+	// Exact formula: lowcontig_offset >= size/4
 	offset := tracker.nextLowcontig - tracker.startIndex
 	if offset >= tracker.size/4 {
 		bitmap := make([]byte, tracker.size/8+1)
 		copy(bitmap, tracker.bitmap[offset/8:tracker.size/8])
 		tracker.bitmap = bitmap
 		tracker.startIndex += (offset / 8) * 8
+		tracker.nCopy++
 	}
 
 	return nil
@@ -108,7 +109,7 @@ func (tracker *Tracker) NextLowcontig() uint64 {
 
 // IsTracked returns true if tracker has already tracked the object with specified id.
 func (tracker *Tracker) IsTracked(id uint64) bool {
-	/* It is already tracked */
+	// It is already tracked
 	if id < tracker.nextLowcontig {
 		return true
 	}
@@ -126,14 +127,14 @@ func (tracker *Tracker) IsTracked(id uint64) bool {
 	return false
 }
 
-// Next obtains next_id > id that has not been tracked yet.
+// Next obtains nextID > id that has not been tracked yet.
 func (tracker *Tracker) Next(id uint64) (uint64, error) {
-	/* Up to _lowcontig, all the IDs have already tracked */
+	// Up to next lowcontig, all the IDs have already tracked
 	if id < tracker.nextLowcontig {
 		id = tracker.nextLowcontig
 	}
 
-	if id >= tracker.size {
+	if id >= tracker.startIndex+tracker.size {
 		return 0, fmt.Errorf("Out of range ID")
 	}
 
@@ -148,6 +149,6 @@ func (tracker *Tracker) Next(id uint64) (uint64, error) {
 		bitIndex++
 	}
 
-	nextID := index*8 + bitIndex
+	nextID := tracker.startIndex + index*8 + bitIndex
 	return nextID, nil
 }
