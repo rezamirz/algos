@@ -329,3 +329,31 @@ func TestMinPQ4(t *testing.T) {
 	assert.Equal(t, "key3", key)
 	assert.Equal(t, 0, minpq.Size())
 }
+
+func TestIntMinPQ(t *testing.T) {
+	minpq := NewHashedPQ(MinPQ, 100)
+
+	assert.Equal(t, true, minpq.IsEmpty())
+	assert.Equal(t, 0, minpq.Size())
+
+	/* Insert key=10 priority 20 */
+	_, err := minpq.Put(10, 20)
+	assert.NoError(t, err)
+	assert.Equal(t, false, minpq.IsEmpty())
+	assert.Equal(t, 1, minpq.Size())
+
+	priority, err := minpq.Get(10)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(20), priority)
+
+	/* Insert key=11 priority 22 */
+	_, err = minpq.Put(11, 22)
+	assert.NoError(t, err)
+	assert.Equal(t, false, minpq.IsEmpty())
+	assert.Equal(t, 2, minpq.Size())
+
+	priority, err = minpq.Get(11)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(22), priority)
+
+}

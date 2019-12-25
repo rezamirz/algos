@@ -14,21 +14,21 @@ type PriorityQueue interface {
 	Capacity() int
 
 	// Returns priority of the key and error
-	Get(key string) (int64, error)
+	Get(key interface{}) (int64, error)
 
 	// If the key doesn't exist in the PQ, it inserts new key with priority.
 	// If the key exist in PQ then it updates the key priority.
 	// The key might move to new place in the PQ based on new priority.
 	// Returns true if the PQ contains the key, otherwise on new insertions returns false.
-	Put(key string, priority int64) (bool, error)
+	Put(key interface{}, priority int64) (bool, error)
 
-	Delete(key string) error
+	Delete(key interface{}) error
 
 	// Returns first key (with min/max priority), it's priority and error if there is any
-	First() (string, int64, error)
+	First() (interface{}, int64, error)
 
 	// Pops first key (with min/max priority) from the queue, and returns the key it's priority, and error if there is any
-	Dequeue() (string, int64, error)
+	Dequeue() (interface{}, int64, error)
 }
 
 type IntComparator interface {
@@ -70,7 +70,7 @@ func (s *smaller) Compare(p1, p2 int64) int {
 // The elements inside a HashedPQ
 type heapElement struct {
 	index int // Index in heap array
-	key   string
+	key   interface{}
 	p     int64 // Priority
 }
 
@@ -85,7 +85,7 @@ const (
 type HashedPQ struct {
 	pqType   PQType
 	a        []*heapElement
-	table    map[string]*heapElement
+	table    map[interface{}]*heapElement
 	n        int // Number of elements in PQ
 	capacity int
 
@@ -96,7 +96,7 @@ func NewHashedPQ(pqType PQType, capacity int) PriorityQueue {
 	heap := &HashedPQ{
 		pqType:   pqType,
 		a:        make([]*heapElement, capacity),
-		table:    map[string]*heapElement{},
+		table:    map[interface{}]*heapElement{},
 		n:        0,
 		capacity: capacity,
 	}
@@ -123,7 +123,7 @@ func (pq *HashedPQ) Capacity() int {
 }
 
 // Returns priority and error if there is any
-func (pq *HashedPQ) Get(key string) (int64, error) {
+func (pq *HashedPQ) Get(key interface{}) (int64, error) {
 	element, ok := pq.table[key]
 	if !ok {
 		return 0, fmt.Errorf("GET key '%s', not found", key)
@@ -136,7 +136,7 @@ func (pq *HashedPQ) Get(key string) (int64, error) {
 	return element.p, nil
 }
 
-func (pq *HashedPQ) Put(key string, priority int64) (bool, error) {
+func (pq *HashedPQ) Put(key interface{}, priority int64) (bool, error) {
 	element, ok := pq.table[key]
 	if ok {
 		pq.update(element, priority)
@@ -207,7 +207,7 @@ func (pq *HashedPQ) update(element *heapElement, priority int64) {
 	}
 }
 
-func (pq *HashedPQ) Delete(key string) error {
+func (pq *HashedPQ) Delete(key interface{}) error {
 	element, ok := pq.table[key]
 	if !ok {
 		return fmt.Errorf("UPDATE key %s, not found", key)
@@ -229,7 +229,7 @@ func (pq *HashedPQ) Delete(key string) error {
 	return nil
 }
 
-func (pq *HashedPQ) First() (string, int64, error) {
+func (pq *HashedPQ) First() (interface{}, int64, error) {
 	if pq.n < 1 {
 		return "", 0, fmt.Errorf("FIRST empty heap")
 	}
@@ -238,7 +238,7 @@ func (pq *HashedPQ) First() (string, int64, error) {
 	return element.key, element.p, nil
 }
 
-func (pq *HashedPQ) Dequeue() (string, int64, error) {
+func (pq *HashedPQ) Dequeue() (interface{}, int64, error) {
 	if pq.n <= 0 {
 		return "", 0, fmt.Errorf("DEQUEUE empty heap")
 	}
@@ -260,7 +260,7 @@ func (pq *HashedPQ) Dequeue() (string, int64, error) {
 
 }
 
-func (pq *HashedPQ) dump(op string, element *heapElement) {
+func (pq *HashedPQ) dump(op interface{}, element *heapElement) {
 	if !debug {
 		return
 	}
