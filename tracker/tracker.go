@@ -28,7 +28,18 @@ SOFTWARE.
 
 package tracker
 
-import "fmt"
+import (
+	"errors"
+)
+
+var OutOfRangeIndex = errors.New("Track index out of range")
+
+// This error is returned by Untrack(). Only FixedTracker supports Untrack()
+var UntrackNotSupported = errors.New("Untrack not supported")
+
+// EOF is the error that is returned by Next() when there is no more untracked
+// item in the tracker
+var EOF = errors.New("EOF")
 
 type Tracker struct {
 	size          uint64 /* Number of bits of bitmap in tracker */
@@ -74,7 +85,7 @@ func (tracker *Tracker) Track(id uint64) error {
 
 	index := id - tracker.startIndex
 	if index > tracker.size {
-		return fmt.Errorf("Track index out of range")
+		return OutOfRangeIndex
 	}
 
 	// Now index becomes a byte index inside the bitmap
@@ -113,11 +124,11 @@ func (tracker *Tracker) Track(id uint64) error {
 
 func (tracker *Tracker) Untrack(id uint64) error {
 	if tracker.trackerType == DynamicTracker {
-		return fmt.Errorf("Tracker doesn'r support untrack")
+		return UntrackNotSupported
 	}
 
 	if id > tracker.size {
-		return fmt.Errorf("Untrack index out of range")
+		return OutOfRangeIndex
 	}
 
 	index := id / 8
@@ -130,7 +141,7 @@ func (tracker *Tracker) Untrack(id uint64) error {
 	return nil
 }
 
-// NextLowcontig obtains lowest contiguous id that was tracked.
+// NextLowcontig obtains lowest contiguous id that was tracked up to id.
 func (tracker *Tracker) NextLowcontig() uint64 {
 	return tracker.nextLowcontig
 }
@@ -162,8 +173,12 @@ func (tracker *Tracker) Next(id uint64) (uint64, error) {
 		id = tracker.nextLowcontig
 	}
 
+	if id >= tracker.size && tracker.trackerType == FixedTracker {
+		return 0, EOF
+	}
+
 	if id >= tracker.startIndex+tracker.size {
-		return 0, fmt.Errorf("Out of range ID")
+		return 0, OutOfRangeIndex
 	}
 
 	index := (id - tracker.startIndex) / 8
@@ -179,4 +194,8 @@ func (tracker *Tracker) Next(id uint64) (uint64, error) {
 
 	nextID := tracker.startIndex + index*8 + bitIndex
 	return nextID, nil
+}
+
+func (tracker *Tracker) Size() uint64 {
+	return tracker.size
 }
