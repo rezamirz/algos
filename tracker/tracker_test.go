@@ -9,9 +9,9 @@ import (
 
 const TRACKER_SIZE = 1000
 
-func TestSimpleTracker(t *testing.T) {
+func TestSimpleDynamicTracker(t *testing.T) {
 	trackerSize := uint64(TRACKER_SIZE)
-	tracker := NewTracker(trackerSize, 0)
+	tracker := NewTracker(trackerSize, DynamicTracker, 0)
 
 	for i := uint64(0); i < tracker.size; i++ {
 		err := tracker.Track(i)
@@ -25,13 +25,40 @@ func TestSimpleTracker(t *testing.T) {
 	}
 }
 
+func TestSimpleFixedTracker(t *testing.T) {
+	trackerSize := uint64(TRACKER_SIZE)
+	tracker := NewTracker(trackerSize, FixedTracker, 0)
+
+	for i := uint64(0); i < tracker.size; i++ {
+		err := tracker.Track(i)
+		assert.Equal(t, nil, err)
+
+		nextLowcontig := tracker.NextLowcontig()
+		assert.Equal(t, i+1, nextLowcontig)
+
+		rc := tracker.IsTracked(i)
+		assert.Equal(t, true, rc)
+	}
+
+	err := tracker.Untrack(5)
+	assert.Equal(t, nil, err)
+
+	nextLowcontig := tracker.NextLowcontig()
+	assert.Equal(t, uint64(5), nextLowcontig)
+
+	rc := tracker.IsTracked(5)
+	assert.Equal(t, false, rc)
+
+}
+
+
 func TestTracker(t *testing.T) {
 
 	fmt.Printf("This test takes more than 10 sec ...\n")
 
 	for j := 1; j <= 10; j++ {
 		trackerSize := uint64(j * TRACKER_SIZE)
-		tracker := NewTracker(trackerSize, 0)
+		tracker := NewTracker(trackerSize, DynamicTracker, 0)
 
 		for i := uint64(0); i < tracker.size; i++ {
 			err := tracker.Track(i)
@@ -53,7 +80,7 @@ func TestTracker(t *testing.T) {
 		trackerSize := uint64(j * TRACKER_SIZE)
 		nl := uint64(j * 19)
 
-		tracker := NewTracker(trackerSize, nl)
+		tracker := NewTracker(trackerSize, DynamicTracker, nl)
 
 		for i := nl; i < tracker.size; i++ {
 			_ = tracker.Track(i)
@@ -72,7 +99,7 @@ func TestTracker(t *testing.T) {
 		trackerSize := uint64(j * TRACKER_SIZE)
 		nl := uint64(j*19 + j)
 
-		tracker := NewTracker(trackerSize, nl)
+		tracker := NewTracker(trackerSize, DynamicTracker, nl)
 
 		for i := nl; i < trackerSize; i++ {
 			_ = tracker.Track(i)
@@ -91,7 +118,7 @@ func TestTracker(t *testing.T) {
 
 func TestTrackerLowcontig(t *testing.T) {
 	trackerSize := uint64(TRACKER_SIZE)
-	tracker := NewTracker(trackerSize, 0)
+	tracker := NewTracker(trackerSize, DynamicTracker, 0)
 
 	err := tracker.Track(10)
 	assert.Equal(t, nil, err)

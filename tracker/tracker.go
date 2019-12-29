@@ -36,15 +36,24 @@ type Tracker struct {
 	startIndex    uint64 /* Start index of the IDs */
 	bitmap        []byte
 	nCopy         int
+	trackerType   TrackerType
 }
 
+type TrackerType int
+
+const (
+	FixedTracker   TrackerType = 1
+	DynamicTracker TrackerType = 2
+)
+
 // NewTracker creates a tracker
-func NewTracker(size uint64, nextLowcontig uint64) *Tracker {
+func NewTracker(size uint64, trackerType TrackerType, nextLowcontig uint64) *Tracker {
 
 	t := &Tracker{
 		size:          size,
 		nextLowcontig: nextLowcontig,
 		startIndex:    nextLowcontig,
+		trackerType:   trackerType,
 	}
 
 	t.bitmap = make([]byte, size/8+1)
@@ -52,8 +61,8 @@ func NewTracker(size uint64, nextLowcontig uint64) *Tracker {
 }
 
 // Track tracks an object with specified id.
-// IDs start from 0 and can grow indefinitely if the tracker has space.
-// Every call to tracker_track() would shift the tracker bitmap if
+// IDs start from 0 and can grow indefinitely if the tracker is dynamic.
+// Every call to Track() would shift the bitmap of a dynamic tracker if
 // a quarter of the tracker has already been tracked. This shifting
 // would make space to track new IDs.
 func (tracker *Tracker) Track(id uint64) error {
@@ -65,7 +74,7 @@ func (tracker *Tracker) Track(id uint64) error {
 
 	index := id - tracker.startIndex
 	if index > tracker.size {
-		return fmt.Errorf("Index out of range")
+		return fmt.Errorf("Track index out of range")
 	}
 
 	// Now index becomes a byte index inside the bitmap
@@ -91,12 +100,31 @@ func (tracker *Tracker) Track(id uint64) error {
 	// If at least a quarter of tracker has already been tracked, shift the bitmap.
 	// Exact formula: lowcontig_offset >= size/4
 	offset := tracker.nextLowcontig - tracker.startIndex
-	if offset >= tracker.size/4 {
+	if (offset >= tracker.size/4) && (tracker.trackerType == DynamicTracker) {
 		bitmap := make([]byte, tracker.size/8+1)
 		copy(bitmap, tracker.bitmap[offset/8:tracker.size/8])
 		tracker.bitmap = bitmap
 		tracker.startIndex += (offset / 8) * 8
 		tracker.nCopy++
+	}
+
+	return nil
+}
+
+func (tracker *Tracker) Untrack(id uint64) error {
+	if tracker.trackerType == DynamicTracker {
+		return fmt.Errorf("Tracker doesn'r support untrack")
+	}
+
+	if id > tracker.size {
+		return fmt.Errorf("Untrack index out of range")
+	}
+
+	index := id / 8
+	tracker.bitmap[index] = tracker.bitmap[index] & ^(1<<(index%8))
+
+	if id < tracker.nextLowcontig {
+		tracker.nextLowcontig = id
 	}
 
 	return nil
