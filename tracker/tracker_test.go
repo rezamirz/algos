@@ -17,7 +17,7 @@ func TestSimpleDynamicTracker(t *testing.T) {
 		err := tracker.Track(i)
 		assert.Equal(t, nil, err)
 
-		nextLowcontig := tracker.NextLowcontig()
+		nextLowcontig, _ := tracker.NextLowcontig()
 		assert.Equal(t, i+1, nextLowcontig)
 
 		rc := tracker.IsTracked(i)
@@ -33,8 +33,10 @@ func TestSimpleFixedTracker(t *testing.T) {
 		err := tracker.Track(i)
 		assert.Equal(t, nil, err)
 
-		nextLowcontig := tracker.NextLowcontig()
-		assert.Equal(t, i+1, nextLowcontig)
+		nextLowcontig, err := tracker.NextLowcontig()
+		if i < tracker.size-1 {
+			assert.Equal(t, i+1, nextLowcontig)
+		}
 
 		rc := tracker.IsTracked(i)
 		assert.Equal(t, true, rc)
@@ -43,7 +45,7 @@ func TestSimpleFixedTracker(t *testing.T) {
 	err := tracker.Untrack(5)
 	assert.Equal(t, nil, err)
 
-	nextLowcontig := tracker.NextLowcontig()
+	nextLowcontig, err := tracker.NextLowcontig()
 	assert.Equal(t, uint64(5), nextLowcontig)
 
 	rc := tracker.IsTracked(5)
@@ -68,7 +70,7 @@ func TestTracker(t *testing.T) {
 			assert.Equal(t, i+1, n)
 			assert.Equal(t, nil, err)
 
-			nextLowcontig := tracker.NextLowcontig()
+			nextLowcontig, _ := tracker.NextLowcontig()
 			assert.Equal(t, i+1, nextLowcontig)
 
 			rc := tracker.IsTracked(i)
@@ -88,7 +90,7 @@ func TestTracker(t *testing.T) {
 			n, _ := tracker.Next(i)
 			assert.Equal(t, i+1, n)
 
-			nextLowcontig := tracker.NextLowcontig()
+			nextLowcontig, _ := tracker.NextLowcontig()
 			assert.Equal(t, i+1, nextLowcontig)
 
 			_ = tracker.IsTracked(i)
@@ -107,7 +109,7 @@ func TestTracker(t *testing.T) {
 			n, _ := tracker.Next(i)
 			assert.Equal(t, i+1, n)
 
-			nextLowcontig := tracker.NextLowcontig()
+			nextLowcontig, _ := tracker.NextLowcontig()
 			assert.Equal(t, i+1, nextLowcontig)
 
 			_ = tracker.IsTracked(i)
@@ -122,46 +124,46 @@ func TestTrackerLowcontig(t *testing.T) {
 
 	err := tracker.Track(10)
 	assert.Equal(t, nil, err)
-	nextLowcontig := tracker.NextLowcontig()
+	nextLowcontig, _ := tracker.NextLowcontig()
 	assert.Equal(t, uint64(0), nextLowcontig)
 
 	err = tracker.Track(11)
 	assert.Equal(t, nil, err)
-	nextLowcontig = tracker.NextLowcontig()
+	nextLowcontig, _ = tracker.NextLowcontig()
 	assert.Equal(t, uint64(0), nextLowcontig)
 
 	err = tracker.Track(2)
 	assert.Equal(t, nil, err)
-	nextLowcontig = tracker.NextLowcontig()
+	nextLowcontig, _ = tracker.NextLowcontig()
 	assert.Equal(t, uint64(0), nextLowcontig)
 
 	err = tracker.Track(1)
 	assert.Equal(t, nil, err)
-	nextLowcontig = tracker.NextLowcontig()
+	nextLowcontig, _ = tracker.NextLowcontig()
 	assert.Equal(t, uint64(0), nextLowcontig)
 
 	err = tracker.Track(0)
 	assert.Equal(t, nil, err)
-	nextLowcontig = tracker.NextLowcontig()
+	nextLowcontig, _ = tracker.NextLowcontig()
 	assert.Equal(t, uint64(3), nextLowcontig)
 
 	err = tracker.Track(3)
 	assert.Equal(t, nil, err)
-	nextLowcontig = tracker.NextLowcontig()
+	nextLowcontig, _ = tracker.NextLowcontig()
 	assert.Equal(t, uint64(4), nextLowcontig)
 
 	err = tracker.Track(6)
 	assert.Equal(t, nil, err)
-	nextLowcontig = tracker.NextLowcontig()
+	nextLowcontig, _ = tracker.NextLowcontig()
 	assert.Equal(t, uint64(4), nextLowcontig)
 
 	err = tracker.Track(4)
 	assert.Equal(t, nil, err)
-	nextLowcontig = tracker.NextLowcontig()
+	nextLowcontig, _ = tracker.NextLowcontig()
 	assert.Equal(t, uint64(5), nextLowcontig)
 
 	err = tracker.Track(5)
 	assert.Equal(t, nil, err)
-	nextLowcontig = tracker.NextLowcontig()
+	nextLowcontig, _ = tracker.NextLowcontig()
 	assert.Equal(t, uint64(7), nextLowcontig)
 }

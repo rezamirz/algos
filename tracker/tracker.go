@@ -142,8 +142,11 @@ func (tracker *Tracker) Untrack(id uint64) error {
 }
 
 // NextLowcontig obtains lowest contiguous id that was tracked up to id.
-func (tracker *Tracker) NextLowcontig() uint64 {
-	return tracker.nextLowcontig
+func (tracker *Tracker) NextLowcontig() (uint64, error) {
+	if tracker.trackerType == FixedTracker && tracker.nextLowcontig >= tracker.size {
+		return 0, EOF
+	}
+	return tracker.nextLowcontig, nil
 }
 
 // IsTracked returns true if tracker has already tracked the object with specified id.
@@ -194,6 +197,12 @@ func (tracker *Tracker) Next(id uint64) (uint64, error) {
 
 	nextID := tracker.startIndex + index*8 + bitIndex
 	return nextID, nil
+}
+
+// Return up to n untracked ids starting from startId. The second returned value
+// is the number of valid entries in
+func (tracker *Tracker) GetUntracked(startId uint64, n uint32) ([]uint32, uint32) {
+	return nil, 0
 }
 
 func (tracker *Tracker) Size() uint64 {
