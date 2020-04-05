@@ -1,6 +1,6 @@
 /*
 
-mylog.go
+log.go
 
 MIT License
 
@@ -31,9 +31,6 @@ package mylog
 import (
 	"errors"
 	"github.com/rezamirz/myalgos/configurator"
-	"path/filepath"
-	"strconv"
-	"sync"
 )
 
 var ErrNoLogInConfigurator = errors.New("No log in configurator")
@@ -91,45 +88,9 @@ func New(configurator configurator.Configurator) (Log, error) {
 
 	switch logtype {
 	case "file":
-		filename, ok := configurator.Get(FILENAME)
-		if !ok {
-			return nil, ErrNoFilenameInConfigurator
-		}
-		base := filepath.Base(filename)
-		dir := filepath.Dir(filename)
-
-		logSizeStr, ok := configurator.Get(LOGFILE_SIZE)
-		var logSize int64
-		var err error
-		if ok {
-			logSize, err = strconv.ParseInt(logSizeStr, 10, 64)
-			if err != nil {
-				return nil, ErrInvalidLogSize
-			}
-		} else {
-			logSize = DefaultLogSize
-		}
-
-		logRotationStr, ok := configurator.Get(LOG_ROTATION)
-		var logRotation int
-		if ok {
-			logRotation, err = strconv.Atoi(logRotationStr)
-			if err != nil {
-				return nil, ErrInvalidLogRotation
-			}
-		} else {
-			logRotation = DefaultLogRotation
-		}
-
-		return &FileLog{
-			filename:  filename,
-			base:      base,
-			dir:       dir,
-			mutex:     &sync.RWMutex{},
-			loggers:   map[string]Logger{},
-			logSize:   logSize,
-			nRotation: logRotation,
-		}, nil
+		return newFileLog(configurator)
+	case "stdout":
+		return newStdOutLog(configurator)
 	}
 
 	return nil, ErrInvalidLogType

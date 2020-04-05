@@ -1,6 +1,6 @@
 /*
 
-mylog.go
+file_log.go
 
 MIT License
 
@@ -30,6 +30,7 @@ package mylog
 
 import (
 	"fmt"
+	"github.com/rezamirz/myalgos/configurator"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -38,7 +39,7 @@ import (
 )
 
 type FileLog struct {
-	filename     string
+	filename     string // filename = dir + '/' + base
 	base         string // base = basename + '.' + baseExt
 	basename     string
 	baseExt      string
@@ -46,10 +47,52 @@ type FileLog struct {
 	file         *os.File
 	mutex        *sync.RWMutex
 	loggers      map[string]Logger
-	total        int64
-	logSize      int64
-	nRotation    int
-	nextRotation int
+	total        int64 // Total number of bytes written to the log
+	logSize      int64 // Size of the log when rotation happens
+	nRotation    int   // Number of rotation files
+	nextRotation int   // Next rotation number
+}
+
+func newFileLog(configurator configurator.Configurator) (*FileLog, error) {
+	filename, ok := configurator.Get(FILENAME)
+	if !ok {
+		return nil, ErrNoFilenameInConfigurator
+	}
+	base := filepath.Base(filename)
+	dir := filepath.Dir(filename)
+
+	logSizeStr, ok := configurator.Get(LOGFILE_SIZE)
+	var logSize int64
+	var err error
+	if ok {
+		logSize, err = strconv.ParseInt(logSizeStr, 10, 64)
+		if err != nil {
+			return nil, ErrInvalidLogSize
+		}
+	} else {
+		logSize = DefaultLogSize
+	}
+
+	logRotationStr, ok := configurator.Get(LOG_ROTATION)
+	var logRotation int
+	if ok {
+		logRotation, err = strconv.Atoi(logRotationStr)
+		if err != nil {
+			return nil, ErrInvalidLogRotation
+		}
+	} else {
+		logRotation = DefaultLogRotation
+	}
+
+	return &FileLog{
+		filename:  filename,
+		base:      base,
+		dir:       dir,
+		mutex:     &sync.RWMutex{},
+		loggers:   map[string]Logger{},
+		logSize:   logSize,
+		nRotation: logRotation,
+	}, nil
 }
 
 /* Creates a FileLog with specified filename and determined log level */
@@ -184,7 +227,7 @@ func (flog *FileLog) rotate() error {
 
 	flog.file = file
 	flog.total = 0
-	flog.nextRotation = flog.nextRotation % flog.nRotation + 1
+	flog.nextRotation = flog.nextRotation%flog.nRotation + 1
 	return nil
 }
 
