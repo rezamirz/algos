@@ -78,7 +78,7 @@ func (logger *LoggerImpl) Attach(log Log) {
 func (logger *LoggerImpl) write(level string, format string, v ...interface{}) {
 	t := time.Now()
 	s := fmt.Sprintf(format, v ...)
-	s2 := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-%2d:%2d %s %s\t%s\n",
+	s2 := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-%03d:%03d %s %s\t%s\n",
 		t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(),
 		t.Second(), t.Nanosecond()/1000000, (t.Nanosecond()/1000)%1000,
 		level, logger.section, s)
