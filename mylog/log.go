@@ -4,7 +4,7 @@ mylog.go
 
 MIT License
 
-Copyright (c) 2018 rezamirz
+Copyright (c) 2019 rezamirz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,15 +44,14 @@ var ErrInvalidLogType = errors.New("Invalid log type")
 var ErrInvalidLogSize = errors.New("Invalid log size")
 var ErrInvalidLogRotation = errors.New("Invalid log rotation")
 
-
 const (
-	LOGTYPE  = "logtype"
-	FILENAME = "filename"
+	LOGTYPE      = "logtype"
+	FILENAME     = "filename"
 	LOGFILE_SIZE = "log_size"
 	LOG_ROTATION = "log_rotation"
-	LEVEL    = "level"
+	LEVEL        = "level"
 
-	DefaultLogSize = 100 * 1024 * 1024
+	DefaultLogSize     = 100 * 1024 * 1024
 	DefaultLogRotation = 10
 )
 
@@ -69,9 +68,13 @@ const (
 type Log interface {
 	Open() error
 	Close() error
-	Write(msg string) error
+	Write(msg string) (int, error)
 
+	// Sets the rotation size and number of log rotations
 	SetRotation(rotationSize int64, nRotation int)
+
+	// Returns the next rotation number
+	GetRotation() int
 
 	// Rotate() must be called as soon as the log_file_size >= rotation_size
 	Rotate() error
@@ -119,12 +122,12 @@ func New(configurator configurator.Configurator) (Log, error) {
 		}
 
 		return &FileLog{
-			filename: filename,
-			base: base,
-			dir: dir,
-			mutex:    &sync.RWMutex{},
-			loggers:  map[string]Logger{},
-			logSize: logSize,
+			filename:  filename,
+			base:      base,
+			dir:       dir,
+			mutex:     &sync.RWMutex{},
+			loggers:   map[string]Logger{},
+			logSize:   logSize,
 			nRotation: logRotation,
 		}, nil
 	}

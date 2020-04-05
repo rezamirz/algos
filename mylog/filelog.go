@@ -4,7 +4,7 @@ mylog.go
 
 MIT License
 
-Copyright (c) 2018 rezamirz
+Copyright (c) 2019 rezamirz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ import (
 
 type FileLog struct {
 	filename     string
-	base         string		// base = basename + '.' + baseExt
+	base         string // base = basename + '.' + baseExt
 	basename     string
 	baseExt      string
 	dir          string
@@ -54,6 +54,9 @@ type FileLog struct {
 
 /* Creates a FileLog with specified filename and determined log level */
 func (flog *FileLog) Open() error {
+	flog.mutex.Lock()
+	defer flog.mutex.Unlock()
+
 	file, err := flog.doOpen()
 	if err != nil {
 		return err
@@ -124,14 +127,17 @@ func (flog *FileLog) findMaxRotationNumber() int {
 		return nil
 	})
 
-	return n+1
+	return n + 1
 }
 
 func (flog *FileLog) Close() error {
+	flog.mutex.Lock()
+	defer flog.mutex.Unlock()
+
 	return flog.file.Close()
 }
 
-func (flog *FileLog) Write(msg string) error {
+func (flog *FileLog) Write(msg string) (int, error) {
 	flog.mutex.Lock()
 	n, err := flog.file.Write([]byte(msg))
 	flog.total += int64(n)
@@ -140,12 +146,16 @@ func (flog *FileLog) Write(msg string) error {
 		flog.rotate()
 	}
 	flog.mutex.Unlock()
-	return err
+	return n, err
 }
 
 func (flog *FileLog) SetRotation(logSize int64, nRotation int) {
 	flog.logSize = logSize
 	flog.nRotation = nRotation
+}
+
+func (flog *FileLog) GetRotation() int {
+	return flog.nextRotation
 }
 
 func (flog *FileLog) Rotate() error {
@@ -174,7 +184,7 @@ func (flog *FileLog) rotate() error {
 
 	flog.file = file
 	flog.total = 0
-	flog.nextRotation = (flog.nextRotation+1) % flog.nRotation
+	flog.nextRotation = flog.nextRotation % flog.nRotation + 1
 	return nil
 }
 

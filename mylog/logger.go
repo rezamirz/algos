@@ -6,7 +6,7 @@ Logs a section of a program.
 
 MIT License
 
-Copyright (c) 2018 rezamirz
+Copyright (c) 2019 rezamirz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -42,23 +42,23 @@ type Logger interface {
 	// Ataches the logger to a new logging sink
 	Attach(log Log)
 
-	Error(format string, v ...interface{})
-	Warn(format string, v ...interface{})
-	Info(format string, v ...interface{})
-	Debug(format string, v ...interface{})
+	Error(format string, v ...interface{}) (int, error)
+	Warn(format string, v ...interface{}) (int, error)
+	Info(format string, v ...interface{}) (int, error)
+	Debug(format string, v ...interface{}) (int, error)
 }
 
 type LoggerImpl struct {
-	log    Log
-	level  LogLevel
-	levels map[string]LogLevel
+	log     Log
+	level   LogLevel
+	levels  map[string]LogLevel
 	section string
 }
 
 func newLogger(log Log, section string) Logger {
 	return &LoggerImpl{
-		log:    log,
-		level:  LevelError,
+		log:     log,
+		level:   LevelError,
 		section: section,
 	}
 }
@@ -75,44 +75,44 @@ func (logger *LoggerImpl) Attach(log Log) {
 	logger.log = log
 }
 
-func (logger *LoggerImpl) write(level string, format string, v ...interface{}) {
+func (logger *LoggerImpl) write(level string, format string, v ...interface{}) (int, error) {
 	t := time.Now()
-	s := fmt.Sprintf(format, v ...)
+	s := fmt.Sprintf(format, v...)
 	s2 := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-%03d:%03d %s %s\t%s\n",
 		t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(),
 		t.Second(), t.Nanosecond()/1000000, (t.Nanosecond()/1000)%1000,
 		level, logger.section, s)
-	logger.log.Write(s2)
+	return logger.log.Write(s2)
 }
 
-func (logger *LoggerImpl) Error(format string, v ...interface{}) {
+func (logger *LoggerImpl) Error(format string, v ...interface{}) (int, error) {
 	if logger.level < LevelError {
-		return
+		return 0, nil
 	}
 
-	logger.write("ERR", format, v ...)
+	return logger.write("ERR", format, v...)
 }
 
-func (logger *LoggerImpl) Warn(format string, v ...interface{}) {
+func (logger *LoggerImpl) Warn(format string, v ...interface{}) (int, error) {
 	if logger.level < LevelWarn {
-		return
+		return 0, nil
 	}
 
-	logger.write("WARN", format, v ...)
+	return logger.write("WARN", format, v...)
 }
 
-func (logger *LoggerImpl) Info(format string, v ...interface{}) {
+func (logger *LoggerImpl) Info(format string, v ...interface{}) (int, error) {
 	if logger.level < LevelInfo {
-		return
+		return 0, nil
 	}
 
-	logger.write("INFO", format, v ...)
+	return logger.write("INFO", format, v...)
 }
 
-func (logger *LoggerImpl) Debug(format string, v ...interface{}) {
+func (logger *LoggerImpl) Debug(format string, v ...interface{}) (int, error) {
 	if logger.level < LevelDebug {
-		return
+		return 0, nil
 	}
 
-	logger.write("DBG", format, v ...)
+	return logger.write("DBG", format, v...)
 }
