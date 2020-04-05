@@ -63,7 +63,12 @@ func (flog *FileLog) Open() error {
 	if flog.nextRotation > flog.nRotation {
 		flog.nextRotation = 1
 	}
-	fmt.Printf("NextRotationNum=%d\n", flog.nextRotation)
+
+	fileInfo, err := file.Stat()
+	if err == nil {
+		flog.total += fileInfo.Size()
+	}
+	fmt.Printf("NextRotationNum=%d, size=%d, total=%d\n", flog.nextRotation, fileInfo.Size(), flog.total)
 
 	flog.file = file
 	return nil
@@ -130,8 +135,9 @@ func (flog *FileLog) Write(msg string) error {
 	flog.mutex.Lock()
 	n, err := flog.file.Write([]byte(msg))
 	flog.total += int64(n)
+	//fmt.Printf("XXX total=%d, logSize=%d\n", flog.total, flog.logSize)
 	if flog.total >= flog.logSize {
-		flog.Rotate()
+		flog.rotate()
 	}
 	flog.mutex.Unlock()
 	return err
@@ -146,9 +152,19 @@ func (flog *FileLog) Rotate() error {
 	flog.mutex.Lock()
 	defer flog.mutex.Unlock()
 
+	return flog.rotate()
+}
+
+func (flog *FileLog) rotate() error {
 	flog.file.Close()
 
-	newFilename := flog.basename
+	var newFilename string
+	if flog.nextRotation > 0 {
+		newFilename = fmt.Sprintf("%s/%s%d.%s", flog.dir, flog.basename, flog.nextRotation, flog.baseExt)
+	} else {
+		newFilename = fmt.Sprintf("%s/%s.%s", flog.dir, flog.basename, flog.baseExt)
+	}
+	fmt.Printf("XXX filename=%s, new=%s\n", flog.filename, newFilename)
 	os.Rename(flog.filename, newFilename)
 
 	file, err := flog.doOpen()
@@ -157,6 +173,8 @@ func (flog *FileLog) Rotate() error {
 	}
 
 	flog.file = file
+	flog.total = 0
+	flog.nextRotation = (flog.nextRotation+1) % flog.nRotation
 	return nil
 }
 

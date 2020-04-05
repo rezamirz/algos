@@ -11,6 +11,8 @@ func TestMinPQ(t *testing.T) {
 	configurator := configurator.NewConfigurator()
 	configurator.Put(LOGTYPE, "file")
 	configurator.Put(FILENAME, "mylog.log")
+	configurator.Put(LOGFILE_SIZE, "1000")
+	configurator.Put(LOG_ROTATION, "10")
 	log, err := New(configurator)
 	assert.NoError(t, err)
 
@@ -19,7 +21,7 @@ func TestMinPQ(t *testing.T) {
 
 	logger := log.GetLogger("test1")
 	logger.SetLevel(LevelInfo)
-	for i:=0; i<10; i++ {
+	for i:=0; i<100; i++ {
 		logger.Info("Loop %d", i)
 	}
 
