@@ -55,10 +55,10 @@ func newStdOutLog(configurator configurator.Configurator) (*StdOutLog, error) {
 	} else {
 		logSize = DefaultLogSize
 	}
-	return &StdOutLog {
-		mutex:     &sync.RWMutex{},
-		loggers:   map[string]Logger{},
-		logSize:   logSize,
+	return &StdOutLog{
+		mutex:   &sync.RWMutex{},
+		loggers: map[string]Logger{},
+		logSize: logSize,
 	}, nil
 }
 
@@ -98,10 +98,10 @@ func (std *StdOutLog) GetRotation() int {
 	return 0
 }
 
-func (std *StdOutLog) Rotate() error {
+func (std *StdOutLog) Rotate() (interface{}, error) {
 	std.file.Sync()
 	std.total = 0
-	return nil
+	return nil, nil
 }
 
 func (std *StdOutLog) GetLogger(section string) Logger {

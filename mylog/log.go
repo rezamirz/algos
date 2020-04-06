@@ -43,6 +43,9 @@ var ErrInvalidLogRotation = errors.New("Invalid log rotation")
 
 const (
 	LOGTYPE      = "logtype"
+	FILE_LOG     = "file_log"
+	STDOUT_LOG   = "stdout_log"
+	MEM_LOG      = "mem_log"
 	FILENAME     = "filename"
 	LOGFILE_SIZE = "log_size"
 	LOG_ROTATION = "log_rotation"
@@ -73,8 +76,11 @@ type Log interface {
 	// Returns the next rotation number
 	GetRotation() int
 
-	// Rotate() must be called as soon as the log_file_size >= rotation_size
-	Rotate() error
+	// Write() calls Rotate() as soon as the log_file_size >= rotation_size
+	// Rotate() returns a reference to the rotated log file.
+	// If the log file if FILE_LOG, it returns the filename that the log is rotated to.
+	// If the log file is MEM_LOG, it returns the memory that contains all the log data.
+	Rotate() (interface{}, error)
 
 	GetLogger(section string) Logger
 }
@@ -87,10 +93,12 @@ func New(configurator configurator.Configurator) (Log, error) {
 	}
 
 	switch logtype {
-	case "file":
+	case FILE_LOG:
 		return newFileLog(configurator)
-	case "stdout":
+	case STDOUT_LOG:
 		return newStdOutLog(configurator)
+	case MEM_LOG:
+		return newMemLog(configurator)
 	}
 
 	return nil, ErrInvalidLogType

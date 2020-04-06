@@ -25,7 +25,7 @@ func TestSimpleLogRotation(t *testing.T) {
 	cleanLogs()
 
 	configurator := configurator.NewConfigurator()
-	configurator.Put(LOGTYPE, "file")
+	configurator.Put(LOGTYPE, FILE_LOG)
 	configurator.Put(FILENAME, "mylog.log")
 	configurator.Put(LOGFILE_SIZE, "1000")
 	configurator.Put(LOG_ROTATION, "10")
@@ -51,7 +51,7 @@ func TestSimpleLogRotationMultithreaded(t *testing.T) {
 	cleanLogs()
 
 	configurator := configurator.NewConfigurator()
-	configurator.Put(LOGTYPE, "file")
+	configurator.Put(LOGTYPE, FILE_LOG)
 	configurator.Put(FILENAME, "mylog.log")
 	configurator.Put(LOGFILE_SIZE, "1000")
 	configurator.Put(LOG_ROTATION, "10")
@@ -93,7 +93,7 @@ func TestFullLogRotation(t *testing.T) {
 	cleanLogs()
 
 	configurator := configurator.NewConfigurator()
-	configurator.Put(LOGTYPE, "file")
+	configurator.Put(LOGTYPE, FILE_LOG)
 	configurator.Put(FILENAME, "mylog.log")
 	configurator.Put(LOGFILE_SIZE, "1000")
 	configurator.Put(LOG_ROTATION, "10")
@@ -138,7 +138,7 @@ func TestFullLogRotationMultithreaded(t *testing.T) {
 	cleanLogs()
 
 	configurator := configurator.NewConfigurator()
-	configurator.Put(LOGTYPE, "file")
+	configurator.Put(LOGTYPE, FILE_LOG)
 	configurator.Put(FILENAME, "mylog.log")
 	configurator.Put(LOGFILE_SIZE, "1000")
 	configurator.Put(LOG_ROTATION, "10")

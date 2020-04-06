@@ -182,13 +182,23 @@ func (flog *FileLog) Close() error {
 
 func (flog *FileLog) Write(msg string) (int, error) {
 	flog.mutex.Lock()
+	defer flog.mutex.Unlock()
+
 	n, err := flog.file.Write([]byte(msg))
-	flog.total += int64(n)
-	//fmt.Printf("XXX total=%d, logSize=%d\n", flog.total, flog.logSize)
-	if flog.total >= flog.logSize {
-		flog.rotate()
+	if err != nil {
+		return n, err
 	}
-	flog.mutex.Unlock()
+	flog.total += int64(n)
+
+	//fmt.Printf("XXX total=%d, logSize=%d\n", flog.total, flog.logSize)
+
+	if flog.total >= flog.logSize {
+		_, err = flog.rotate()
+		if err != nil {
+			return n, err
+		}
+	}
+
 	return n, err
 }
 
@@ -201,14 +211,14 @@ func (flog *FileLog) GetRotation() int {
 	return flog.nextRotation
 }
 
-func (flog *FileLog) Rotate() error {
+func (flog *FileLog) Rotate() (interface{}, error) {
 	flog.mutex.Lock()
 	defer flog.mutex.Unlock()
 
 	return flog.rotate()
 }
 
-func (flog *FileLog) rotate() error {
+func (flog *FileLog) rotate() (interface{}, error) {
 	flog.file.Close()
 
 	var newFilename string
@@ -222,13 +232,13 @@ func (flog *FileLog) rotate() error {
 
 	file, err := flog.doOpen()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	flog.file = file
 	flog.total = 0
 	flog.nextRotation = flog.nextRotation%flog.nRotation + 1
-	return nil
+	return newFilename, nil
 }
 
 func (flog *FileLog) GetLogger(section string) Logger {

@@ -1,6 +1,6 @@
 /*
 
-mylogger.go
+logger.go
 
 Logs a section of a program.
 
