@@ -47,10 +47,11 @@ type FileLog struct {
 	file         *os.File
 	mutex        *sync.RWMutex
 	loggers      map[string]Logger
-	total        int64 // Total number of bytes written to the log
-	logSize      int64 // Size of the log when rotation happens
-	nRotation    int   // Number of rotation files
-	nextRotation int   // Next rotation number
+	total        int64  // Total number of bytes written to the log
+	logSize      int64  // Size of the log when rotation happens
+	nRotation    int    // Number of rotation files
+	nextRotation int    // Next rotation number
+	configLevels string // All configuration levels obtained from config file
 }
 
 func newFileLog(configurator configurator.Configurator) (*FileLog, error) {
@@ -84,14 +85,17 @@ func newFileLog(configurator configurator.Configurator) (*FileLog, error) {
 		logRotation = DefaultLogRotation
 	}
 
+	configLevels, ok := configurator.Get(LEVEL)
+
 	return &FileLog{
-		filename:  filename,
-		base:      base,
-		dir:       dir,
-		mutex:     &sync.RWMutex{},
-		loggers:   map[string]Logger{},
-		logSize:   logSize,
-		nRotation: logRotation,
+		filename:     filename,
+		base:         base,
+		dir:          dir,
+		mutex:        &sync.RWMutex{},
+		loggers:      map[string]Logger{},
+		logSize:      logSize,
+		nRotation:    logRotation,
+		configLevels: configLevels,
 	}, nil
 }
 
@@ -114,6 +118,11 @@ func (flog *FileLog) Open() error {
 	if err == nil {
 		flog.total += fileInfo.Size()
 	}
+
+	err = flog.setLevels()
+	if err != nil {
+		return err
+	}
 	fmt.Printf("NextRotationNum=%d, size=%d, total=%d\n", flog.nextRotation, fileInfo.Size(), flog.total)
 
 	flog.file = file
@@ -127,6 +136,30 @@ func (flog *FileLog) doOpen() (*os.File, error) {
 	}
 
 	return file, err
+}
+
+func (flog *FileLog) setLevels() error {
+	if len(flog.configLevels) == 0 {
+		return nil
+	}
+
+	cfgLevels := strings.Split(flog.configLevels, ",")
+	for _, cfgLevel := range cfgLevels {
+		s := strings.Split(cfgLevel, ":")
+		if len(s) != 2 {
+			continue
+		}
+		section := s[0]
+		levelStr := s[1]
+		level, err := GetLevelFromString(levelStr)
+		if err != nil {
+			return err
+		}
+		logger := flog.GetLogger(section)
+		logger.SetLevel(level)
+	}
+
+	return nil
 }
 
 func (flog *FileLog) findMaxRotationNumber() int {

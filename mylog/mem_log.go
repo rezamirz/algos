@@ -87,6 +87,10 @@ func (mem *MemLog) Close() error {
 	mem.mutex.Lock()
 	defer mem.mutex.Unlock()
 
+	if len(mem.filename) > 0 {
+		mem.file.Write(mem.buf)
+	}
+
 	return nil
 }
 

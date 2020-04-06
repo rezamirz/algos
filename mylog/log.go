@@ -31,6 +31,7 @@ package mylog
 import (
 	"errors"
 	"github.com/rezamirz/myalgos/configurator"
+	"strings"
 )
 
 var ErrNoLogInConfigurator = errors.New("No log in configurator")
@@ -102,4 +103,29 @@ func New(configurator configurator.Configurator) (Log, error) {
 	}
 
 	return nil, ErrInvalidLogType
+}
+
+func GetLevelFromString(levelStr string) (LogLevel, error) {
+	levelStr = strings.ToUpper(levelStr)
+	if strings.Compare(levelStr, "INFO") == 0 {
+		return LevelDebug, nil
+	}
+
+	if strings.Compare(levelStr, "DEBUG") == 0 || strings.Compare(levelStr, "DBG") == 0 {
+		return LevelDebug, nil
+	}
+
+	if strings.Compare(levelStr, "ERROR") == 0 || strings.Compare(levelStr, "ERR") == 0 {
+		return LevelError, nil
+	}
+
+	if strings.Compare(levelStr, "WARNING") == 0 || strings.Compare(levelStr, "WARN") == 0 {
+		return LevelWarn, nil
+	}
+
+	if strings.Compare(levelStr, "FATAL") == 0 {
+		return LevelFatal, nil
+	}
+
+	return LevelFatal, ErrInvalidLogLevel
 }
