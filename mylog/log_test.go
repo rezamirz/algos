@@ -1,4 +1,3 @@
-
 package mylog
 
 import (
@@ -38,7 +37,7 @@ func TestSimpleLogRotation(t *testing.T) {
 
 	logger := log.GetLogger("test1")
 	logger.SetLevel(LevelInfo)
-	for i:=0; i<100; i++ {
+	for i := 0; i < 100; i++ {
 		logger.Info("Loop %d", i)
 	}
 
@@ -67,22 +66,22 @@ func TestSimpleLogRotationMultithreaded(t *testing.T) {
 	done := make(chan bool)
 	go func(logger Logger) {
 		logger.SetLevel(LevelInfo)
-		for i:=0; i<50; i++ {
+		for i := 0; i < 50; i++ {
 			logger.Info("Loop %d", i)
 		}
 		done <- true
-	} (logger)
+	}(logger)
 
 	go func(logger Logger) {
 		logger.SetLevel(LevelInfo)
-		for i:=50; i<100; i++ {
+		for i := 50; i < 100; i++ {
 			logger.Info("Loop %d", i)
 		}
 		done <- true
-	} (logger)
+	}(logger)
 
-	<- done
-	<- done
+	<-done
+	<-done
 
 	assert.Equal(t, 5, log.GetRotation())
 
@@ -106,7 +105,7 @@ func TestFullLogRotation(t *testing.T) {
 
 	logger := log.GetLogger("test1")
 	logger.SetLevel(LevelInfo)
-	for i:=0; i<200; i++ {
+	for i := 0; i < 200; i++ {
 		logger.Info("Loop %d", i)
 	}
 
@@ -126,7 +125,7 @@ func TestFullLogRotation(t *testing.T) {
 	logger.SetLevel(LevelInfo)
 	assert.Equal(t, 10, log.GetRotation())
 
-	for i:=200; i<220; i++ {
+	for i := 200; i < 220; i++ {
 		logger.Info("Loop %d", i)
 	}
 	assert.Equal(t, 1, log.GetRotation())
@@ -158,17 +157,17 @@ func TestFullLogRotationMultithreaded(t *testing.T) {
 			logger.Info("Loop %d", i)
 		}
 		done <- true
-	} (logger)
+	}(logger)
 
 	go func(logger Logger) {
 		for i := 100; i < 200; i++ {
 			logger.Info("Loop %d", i)
 		}
 		done <- true
-	} (logger)
+	}(logger)
 
-	<- done
-	<- done
+	<-done
+	<-done
 
 	assert.Equal(t, 10, log.GetRotation())
 	log.Close()
