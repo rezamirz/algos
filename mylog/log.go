@@ -67,8 +67,13 @@ const (
 )
 
 type Log interface {
+	// Opens the log sink (file/mem/device)
 	Open() error
+
+	// Closes the log sink
 	Close() error
+
+	// Returns the number of bytes that are written to the log and error if there is any
 	Write(msg string) (int, error)
 
 	// Sets the rotation size and number of log rotations
@@ -83,6 +88,7 @@ type Log interface {
 	// If the log file is MEM_LOG, it returns the memory that contains all the log data.
 	Rotate() (interface{}, error)
 
+	// Returns a section logger that associated with this log
 	GetLogger(section string) Logger
 }
 

@@ -32,17 +32,20 @@ import (
 	"github.com/rezamirz/myalgos/configurator"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 )
 
 type MemLog struct {
-	filename string // If it exist, it will append data to it during rotation
-	file     *os.File
-	mutex    *sync.RWMutex
-	loggers  map[string]Logger
-	buf      []byte
-	total    int64 // Total number of bytes written to the log
-	logSize  int64
+	filename     string // If it exist, it will append data to it during rotation
+	file         *os.File
+	mutex        *sync.RWMutex
+	loggers      map[string]Logger
+	buf          []byte
+	total        int64 // Total number of bytes written to the log
+	logSize      int64
+	configLevels string // All configuration levels obtained from config file
+	defaultLevel LogLevel
 }
 
 func newMemLog(configurator configurator.Configurator) (*MemLog, error) {
@@ -58,11 +61,15 @@ func newMemLog(configurator configurator.Configurator) (*MemLog, error) {
 	} else {
 		logSize = DefaultLogSize
 	}
+
+	configLevels, ok := configurator.Get(LEVEL)
+
 	return &MemLog{
-		filename: filename,
-		mutex:    &sync.RWMutex{},
-		loggers:  map[string]Logger{},
-		logSize:  logSize,
+		filename:     filename,
+		mutex:        &sync.RWMutex{},
+		loggers:      map[string]Logger{},
+		logSize:      logSize,
+		configLevels: configLevels,
 	}, nil
 }
 
@@ -79,7 +86,42 @@ func (mem *MemLog) Open() error {
 		}
 	}
 	mem.file = file
+	mem.defaultLevel = LevelError
+	err = mem.setLevels()
+	if err != nil {
+		return err
+	}
 	mem.buf = make([]byte, mem.logSize)
+	return nil
+}
+
+func (mem *MemLog) setLevels() error {
+	if len(mem.configLevels) == 0 {
+		return nil
+	}
+
+	cfgLevels := strings.Split(mem.configLevels, ",")
+	for _, cfgLevel := range cfgLevels {
+		s := strings.Split(cfgLevel, ":")
+		if len(s) != 2 {
+			continue
+		}
+		section := s[0]
+		levelStr := s[1]
+		level, err := GetLevelFromString(levelStr)
+		if err != nil {
+			return err
+		}
+
+		if strings.Compare(section, "ALL") == 0 {
+			mem.defaultLevel = level
+			continue
+		}
+
+		logger := mem.GetLogger(section)
+		logger.SetLevel(level)
+	}
+
 	return nil
 }
 

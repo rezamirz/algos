@@ -52,6 +52,7 @@ type FileLog struct {
 	nRotation    int    // Number of rotation files
 	nextRotation int    // Next rotation number
 	configLevels string // All configuration levels obtained from config file
+	defaultLevel LogLevel
 }
 
 func newFileLog(configurator configurator.Configurator) (*FileLog, error) {
@@ -119,6 +120,9 @@ func (flog *FileLog) Open() error {
 		flog.total += fileInfo.Size()
 	}
 
+	// Set the default log level to LevelError.
+	// This might be overwritten by setLevels(), which enforces users configured log levels.
+	flog.defaultLevel = LevelError
 	err = flog.setLevels()
 	if err != nil {
 		return err
@@ -155,6 +159,12 @@ func (flog *FileLog) setLevels() error {
 		if err != nil {
 			return err
 		}
+
+		if strings.Compare(section, "ALL") == 0 {
+			flog.defaultLevel = level
+			continue
+		}
+
 		logger := flog.GetLogger(section)
 		logger.SetLevel(level)
 	}
@@ -284,6 +294,7 @@ func (flog *FileLog) GetLogger(section string) Logger {
 	}
 
 	logger = newLogger(flog, section)
+	logger.SetLevel(flog.defaultLevel)
 	flog.loggers[section] = logger
 	return logger
 }

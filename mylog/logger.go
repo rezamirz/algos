@@ -58,7 +58,6 @@ type LoggerImpl struct {
 func newLogger(log Log, section string) Logger {
 	return &LoggerImpl{
 		log:     log,
-		level:   LevelError,
 		section: section,
 	}
 }

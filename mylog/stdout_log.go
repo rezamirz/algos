@@ -32,15 +32,18 @@ import (
 	"github.com/rezamirz/myalgos/configurator"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 )
 
 type StdOutLog struct {
-	mutex   *sync.RWMutex
-	loggers map[string]Logger
-	file    *os.File
-	total   int64 // Total number of bytes written to the log
-	logSize int64
+	mutex        *sync.RWMutex
+	loggers      map[string]Logger
+	file         *os.File
+	total        int64 // Total number of bytes written to the log
+	logSize      int64
+	configLevels string // All configuration levels obtained from config file
+	defaultLevel LogLevel
 }
 
 func newStdOutLog(configurator configurator.Configurator) (*StdOutLog, error) {
@@ -55,10 +58,14 @@ func newStdOutLog(configurator configurator.Configurator) (*StdOutLog, error) {
 	} else {
 		logSize = DefaultLogSize
 	}
+
+	configLevels, ok := configurator.Get(LEVEL)
+
 	return &StdOutLog{
-		mutex:   &sync.RWMutex{},
-		loggers: map[string]Logger{},
-		logSize: logSize,
+		mutex:        &sync.RWMutex{},
+		loggers:      map[string]Logger{},
+		logSize:      logSize,
+		configLevels: configLevels,
 	}, nil
 }
 
@@ -67,6 +74,41 @@ func (std *StdOutLog) Open() error {
 	defer std.mutex.Unlock()
 
 	std.file = os.Stdout
+	std.defaultLevel = LevelError
+	err := std.setLevels()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (std *StdOutLog) setLevels() error {
+	if len(std.configLevels) == 0 {
+		return nil
+	}
+
+	cfgLevels := strings.Split(std.configLevels, ",")
+	for _, cfgLevel := range cfgLevels {
+		s := strings.Split(cfgLevel, ":")
+		if len(s) != 2 {
+			continue
+		}
+		section := s[0]
+		levelStr := s[1]
+		level, err := GetLevelFromString(levelStr)
+		if err != nil {
+			return err
+		}
+
+		if strings.Compare(section, "ALL") == 0 {
+			std.defaultLevel = level
+			continue
+		}
+
+		logger := std.GetLogger(section)
+		logger.SetLevel(level)
+	}
+
 	return nil
 }
 

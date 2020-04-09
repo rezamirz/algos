@@ -20,6 +20,105 @@ func cleanLogs() {
 	}
 }
 
+func TestSimpleLogLevel(t *testing.T) {
+	cleanLogs()
+
+	configurator := configurator.NewConfigurator()
+	configurator.Put(LOGTYPE, FILE_LOG)
+	configurator.Put(FILENAME, "mylog.log")
+	configurator.Put(LOGFILE_SIZE, "1000")
+	configurator.Put(LOG_ROTATION, "10")
+	log, err := New(configurator)
+	assert.NoError(t, err)
+
+	err = log.Open()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, log.GetRotation())
+
+	logger := log.GetLogger("test1")
+	logger.SetLevel(LevelInfo)
+	for i := 0; i < 10; i++ {
+		n, err := logger.Debug("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, n)
+
+		n, err = logger.Error("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, true, n > 0)
+	}
+
+	logger.SetLevel(LevelError)
+	for i := 0; i < 10; i++ {
+		n, err := logger.Debug("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, n)
+
+		n, err = logger.Info("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, n)
+
+	}
+
+	log.Close()
+}
+
+func TestLogLevelByConf(t *testing.T) {
+	cleanLogs()
+
+	configurator := configurator.NewConfigurator()
+	configurator.Put(LOGTYPE, FILE_LOG)
+	configurator.Put(FILENAME, "mylog.log")
+	configurator.Put(LOGFILE_SIZE, "1000")
+	configurator.Put(LOG_ROTATION, "10")
+
+	logConfLevels := "ALL:INFO, test1:ERR, test2:DBG"
+	configurator.Put(LEVEL, logConfLevels)
+	log, err := New(configurator)
+
+	err = log.Open()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, log.GetRotation())
+
+	// Section test1 has LevelError
+	logger := log.GetLogger("test1")
+	for i := 0; i < 10; i++ {
+		n, err := logger.Debug("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, n)
+
+		n, err = logger.Error("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, true, n > 0)
+	}
+
+	// Section test2 has LevelDebug
+	logger = log.GetLogger("test2")
+	for i := 0; i < 10; i++ {
+		n, err := logger.Debug("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, true, n > 0)
+
+		n, err = logger.Error("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, true, n > 0)
+	}
+
+	// Section test 3 has LevelInfo (default)
+	logger = log.GetLogger("test3")
+	for i := 0; i < 10; i++ {
+		n, err := logger.Debug("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, n)
+
+		n, err = logger.Error("Loop %d", i)
+		assert.NoError(t, err)
+		assert.Equal(t, true, n > 0)
+	}
+
+	assert.NoError(t, err)
+
+}
+
 func TestSimpleLogRotation(t *testing.T) {
 	cleanLogs()
 
