@@ -26,7 +26,7 @@ SOFTWARE.
 
 */
 
-package mylog
+package logger
 
 import (
 	"github.com/rezamirz/myalgos/configurator"
@@ -106,7 +106,7 @@ func (std *StdOutLog) setLevels() error {
 		}
 
 		logger := std.GetLogger(section)
-		logger.SetLevel(level)
+		SetLevel(logger, level)
 	}
 
 	return nil

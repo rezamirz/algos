@@ -26,7 +26,7 @@ SOFTWARE.
 
 */
 
-package mylog
+package logger
 
 import (
 	"fmt"
@@ -127,7 +127,7 @@ func (flog *FileLog) Open() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("NextRotationNum=%d, size=%d, total=%d\n", flog.nextRotation, fileInfo.Size(), flog.total)
+	//fmt.Printf("NextRotationNum=%d, size=%d, total=%d\n", flog.nextRotation, fileInfo.Size(), flog.total)
 
 	flog.file = file
 	return nil
@@ -166,7 +166,7 @@ func (flog *FileLog) setLevels() error {
 		}
 
 		logger := flog.GetLogger(section)
-		logger.SetLevel(level)
+		SetLevel(logger, level)
 	}
 
 	return nil
@@ -270,7 +270,7 @@ func (flog *FileLog) rotate() (interface{}, error) {
 	} else {
 		newFilename = fmt.Sprintf("%s/%s.%s", flog.dir, flog.basename, flog.baseExt)
 	}
-	fmt.Printf("XXX filename=%s, new=%s\n", flog.filename, newFilename)
+	//fmt.Printf("XXX filename=%s, new=%s\n", flog.filename, newFilename)
 	os.Rename(flog.filename, newFilename)
 
 	file, err := flog.doOpen()
@@ -294,7 +294,7 @@ func (flog *FileLog) GetLogger(section string) Logger {
 	}
 
 	logger = newLogger(flog, section)
-	logger.SetLevel(flog.defaultLevel)
+	SetLevel(logger, flog.defaultLevel)
 	flog.loggers[section] = logger
 	return logger
 }

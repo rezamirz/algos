@@ -26,7 +26,7 @@ SOFTWARE.
 
 */
 
-package mylog
+package logger
 
 import (
 	"github.com/rezamirz/myalgos/configurator"
@@ -119,7 +119,7 @@ func (mem *MemLog) setLevels() error {
 		}
 
 		logger := mem.GetLogger(section)
-		logger.SetLevel(level)
+		SetLevel(logger, level)
 	}
 
 	return nil

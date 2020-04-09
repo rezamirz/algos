@@ -28,7 +28,7 @@ SOFTWARE.
 
 */
 
-package mylog
+package logger
 
 import (
 	"fmt"
@@ -36,19 +36,19 @@ import (
 )
 
 type Logger interface {
-	SetLevel(level LogLevel)
-	GetLevel() LogLevel
+	setLevel(level LogLevel)
+	getLevel() LogLevel
 
 	// Ataches the logger to a new logging sink
-	Attach(log Log)
+	attach(log Log)
 
-	Error(format string, v ...interface{}) (int, error)
-	Warn(format string, v ...interface{}) (int, error)
-	Info(format string, v ...interface{}) (int, error)
-	Debug(format string, v ...interface{}) (int, error)
+	error(format string, v ...interface{}) (int, error)
+	warn(format string, v ...interface{}) (int, error)
+	info(format string, v ...interface{}) (int, error)
+	debug(format string, v ...interface{}) (int, error)
 }
 
-type LoggerImpl struct {
+type loggerImpl struct {
 	log     Log
 	level   LogLevel
 	levels  map[string]LogLevel
@@ -56,25 +56,49 @@ type LoggerImpl struct {
 }
 
 func newLogger(log Log, section string) Logger {
-	return &LoggerImpl{
+	return &loggerImpl{
 		log:     log,
 		section: section,
 	}
 }
 
-func (logger *LoggerImpl) SetLevel(level LogLevel) {
+func (logger *loggerImpl) setLevel(level LogLevel) {
 	logger.level = level
 }
 
-func (logger *LoggerImpl) GetLevel() LogLevel {
+func SetLevel(logger Logger, level LogLevel) {
+	if logger == nil {
+		return
+	}
+
+	logger.setLevel(level)
+}
+
+func (logger *loggerImpl) getLevel() LogLevel {
 	return logger.level
 }
 
-func (logger *LoggerImpl) Attach(log Log) {
+func GetLevel(logger Logger) LogLevel {
+	if logger == nil {
+		return LevelError
+	}
+
+	return logger.getLevel()
+}
+
+func (logger *loggerImpl) attach(log Log) {
 	logger.log = log
 }
 
-func (logger *LoggerImpl) write(level string, format string, v ...interface{}) (int, error) {
+func Attach(logger Logger, log Log) {
+	if logger == nil {
+		return
+	}
+
+	logger.attach(log)
+}
+
+func (logger *loggerImpl) write(level string, format string, v ...interface{}) (int, error) {
 	t := time.Now()
 	s := fmt.Sprintf(format, v...)
 	s2 := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-%03d:%03d %s %s\t%s\n",
@@ -84,7 +108,7 @@ func (logger *LoggerImpl) write(level string, format string, v ...interface{}) (
 	return logger.log.Write(s2)
 }
 
-func (logger *LoggerImpl) Error(format string, v ...interface{}) (int, error) {
+func (logger *loggerImpl) error(format string, v ...interface{}) (int, error) {
 	if logger.level < LevelError {
 		return 0, nil
 	}
@@ -92,7 +116,15 @@ func (logger *LoggerImpl) Error(format string, v ...interface{}) (int, error) {
 	return logger.write("ERR", format, v...)
 }
 
-func (logger *LoggerImpl) Warn(format string, v ...interface{}) (int, error) {
+func Error(logger Logger, format string, v ...interface{}) (int, error) {
+	if logger == nil {
+		return 0, nil
+	}
+
+	return logger.error(format, v ...)
+}
+
+func (logger *loggerImpl) warn(format string, v ...interface{}) (int, error) {
 	if logger.level < LevelWarn {
 		return 0, nil
 	}
@@ -100,7 +132,15 @@ func (logger *LoggerImpl) Warn(format string, v ...interface{}) (int, error) {
 	return logger.write("WARN", format, v...)
 }
 
-func (logger *LoggerImpl) Info(format string, v ...interface{}) (int, error) {
+func Warn(logger Logger, format string, v ...interface{}) (int, error) {
+	if logger == nil {
+		return 0, nil
+	}
+
+	return logger.warn(format, v ...)
+}
+
+func (logger *loggerImpl) info(format string, v ...interface{}) (int, error) {
 	if logger.level < LevelInfo {
 		return 0, nil
 	}
@@ -108,10 +148,27 @@ func (logger *LoggerImpl) Info(format string, v ...interface{}) (int, error) {
 	return logger.write("INFO", format, v...)
 }
 
-func (logger *LoggerImpl) Debug(format string, v ...interface{}) (int, error) {
+func Info(logger Logger, format string, v ...interface{}) (int, error) {
+	if logger == nil {
+		return 0, nil
+	}
+
+	return logger.info(format, v ...)
+}
+
+func (logger *loggerImpl) debug(format string, v ...interface{}) (int, error) {
 	if logger.level < LevelDebug {
 		return 0, nil
 	}
 
 	return logger.write("DBG", format, v...)
 }
+
+func Debug(logger Logger, format string, v ...interface{}) (int, error) {
+	if logger == nil {
+		return 0, nil
+	}
+
+	return logger.debug(format, v ...)
+}
+

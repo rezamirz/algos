@@ -26,7 +26,7 @@ SOFTWARE.
 
 */
 
-package mylog
+package logger
 
 import (
 	"errors"
