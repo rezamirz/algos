@@ -1,4 +1,4 @@
-# mylog
+# Log Object
 
 - The client can pass different parameters to the factory log function using a Configurator.
 - There are 3 different type of log files that can be chosen by client.
@@ -9,6 +9,8 @@
    - The sink of all log messages will be a chunk of memory.
  - #### Stdout log
    - The sink of all log messages will be standard output.
+
+# Logger Object
 
 - After creating a log a logger has to be obtained to write to the log
   - A logger has a section (related to a section of code)
