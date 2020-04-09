@@ -183,7 +183,7 @@ func (flog *FileLog) findMaxRotationNumber() int {
 	}
 
 	filepath.Walk(flog.dir, func(path string, info os.FileInfo, err error) error {
-		fmt.Printf("Walk path=%s, base=%s\n", path, flog.basename)
+		//fmt.Printf("Walk path=%s, base=%s\n", path, flog.basename)
 		if len(path) < len(flog.base) {
 			return nil
 		}
