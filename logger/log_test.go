@@ -62,7 +62,7 @@ func TestSimpleLogLevel(t *testing.T) {
 	log.Close()
 }
 
-/*func TestLogLevelByConf(t *testing.T) {
+func TestLogLevelByConf(t *testing.T) {
 	cleanLogs()
 
 	configurator := configurator.NewConfigurator()
@@ -81,6 +81,7 @@ func TestSimpleLogLevel(t *testing.T) {
 
 	// Section test1 has LevelError
 	tlogger := log.GetLogger("test1")
+	assert.Equal(t, LevelError, GetLevel(tlogger))
 	for i := 0; i < 10; i++ {
 		n, err := Debug(tlogger, "Loop %d", i)
 		assert.NoError(t, err)
@@ -105,6 +106,7 @@ func TestSimpleLogLevel(t *testing.T) {
 
 	// Section test 3 has LevelInfo (default)
 	tlogger = log.GetLogger("test3")
+	assert.Equal(t, LevelInfo, GetLevel(tlogger))
 	for i := 0; i < 10; i++ {
 		n, err := Debug(tlogger, "Loop %d", i)
 		assert.NoError(t, err)
@@ -117,7 +119,7 @@ func TestSimpleLogLevel(t *testing.T) {
 
 	assert.NoError(t, err)
 
-} */
+}
 
 func TestSimpleLogRotation(t *testing.T) {
 	cleanLogs()

@@ -153,8 +153,9 @@ func (flog *FileLog) setLevels() error {
 		if len(s) != 2 {
 			continue
 		}
-		section := s[0]
-		levelStr := s[1]
+
+		section := strings.Trim(s[0], " ")
+		levelStr := strings.Trim(s[1], " ")
 		level, err := GetLevelFromString(levelStr)
 		if err != nil {
 			return err
@@ -165,7 +166,7 @@ func (flog *FileLog) setLevels() error {
 			continue
 		}
 
-		logger := flog.GetLogger(section)
+		logger := flog.getLogger(section)
 		SetLevel(logger, level)
 	}
 
@@ -287,7 +288,10 @@ func (flog *FileLog) rotate() (interface{}, error) {
 func (flog *FileLog) GetLogger(section string) Logger {
 	flog.mutex.Lock()
 	defer flog.mutex.Unlock()
+	return flog.getLogger(section)
+}
 
+func (flog *FileLog) getLogger(section string) Logger {
 	logger, ok := flog.loggers[section]
 	if ok {
 		return logger
@@ -298,3 +302,4 @@ func (flog *FileLog) GetLogger(section string) Logger {
 	flog.loggers[section] = logger
 	return logger
 }
+

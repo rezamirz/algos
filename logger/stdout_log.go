@@ -93,8 +93,8 @@ func (std *StdOutLog) setLevels() error {
 		if len(s) != 2 {
 			continue
 		}
-		section := s[0]
-		levelStr := s[1]
+		section := strings.Trim(s[0], " ")
+		levelStr := strings.Trim(s[1], " ")
 		level, err := GetLevelFromString(levelStr)
 		if err != nil {
 			return err
@@ -105,7 +105,7 @@ func (std *StdOutLog) setLevels() error {
 			continue
 		}
 
-		logger := std.GetLogger(section)
+		logger := std.getLogger(section)
 		SetLevel(logger, level)
 	}
 
@@ -149,7 +149,10 @@ func (std *StdOutLog) Rotate() (interface{}, error) {
 func (std *StdOutLog) GetLogger(section string) Logger {
 	std.mutex.Lock()
 	defer std.mutex.Unlock()
+	return std.getLogger(section)
+}
 
+func (std *StdOutLog) getLogger(section string) Logger {
 	logger, ok := std.loggers[section]
 	if ok {
 		return logger

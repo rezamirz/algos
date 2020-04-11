@@ -114,7 +114,7 @@ func New(configurator configurator.Configurator) (Log, error) {
 func GetLevelFromString(levelStr string) (LogLevel, error) {
 	levelStr = strings.ToUpper(levelStr)
 	if strings.Compare(levelStr, "INFO") == 0 {
-		return LevelDebug, nil
+		return LevelInfo, nil
 	}
 
 	if strings.Compare(levelStr, "DEBUG") == 0 || strings.Compare(levelStr, "DBG") == 0 {

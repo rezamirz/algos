@@ -106,8 +106,8 @@ func (mem *MemLog) setLevels() error {
 		if len(s) != 2 {
 			continue
 		}
-		section := s[0]
-		levelStr := s[1]
+		section := strings.Trim(s[0], " ")
+		levelStr := strings.Trim(s[1], " ")
 		level, err := GetLevelFromString(levelStr)
 		if err != nil {
 			return err
@@ -118,7 +118,7 @@ func (mem *MemLog) setLevels() error {
 			continue
 		}
 
-		logger := mem.GetLogger(section)
+		logger := mem.getLogger(section)
 		SetLevel(logger, level)
 	}
 
@@ -174,7 +174,10 @@ func (mem *MemLog) Rotate() (interface{}, error) {
 func (mem *MemLog) GetLogger(section string) Logger {
 	mem.mutex.Lock()
 	defer mem.mutex.Unlock()
+	return mem.getLogger(section)
+}
 
+func (mem *MemLog) getLogger(section string) Logger {
 	logger, ok := mem.loggers[section]
 	if ok {
 		return logger
