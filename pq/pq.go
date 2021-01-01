@@ -213,6 +213,7 @@ func (pq *HashedPQ) Delete(key interface{}) error {
 		return fmt.Errorf("UPDATE key %s, not found", key)
 	}
 
+	delete(pq.table, key)
 	oldPriority := element.p
 	index := element.index
 	lastElement := pq.a[pq.n]
