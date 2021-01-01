@@ -256,6 +256,8 @@ func (pq *HashedPQ) Dequeue() (interface{}, int64, error) {
 	lastElement.index = index
 	pq.sink(index)
 
+	delete(pq.table, element.key)
+
 	pq.dump("DEQUEUE", element)
 	return element.key, element.p, nil
 
