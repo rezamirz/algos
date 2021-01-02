@@ -132,7 +132,7 @@ func (tracker *Tracker) Untrack(id uint64) error {
 	}
 
 	index := id / 8
-	tracker.bitmap[index] = tracker.bitmap[index] & ^(1<<(index%8))
+	tracker.bitmap[index] = tracker.bitmap[index] & ^(1 << (index % 8))
 
 	if id < tracker.nextLowcontig {
 		tracker.nextLowcontig = id
@@ -162,7 +162,7 @@ func (tracker *Tracker) IsTracked(id uint64) bool {
 	}
 
 	index = index / 8
-	if tracker.bitmap[index]&1<<(id%8) != 0 {
+	if tracker.bitmap[index]&(1<<(id%8)) != 0 {
 		return true
 	}
 
