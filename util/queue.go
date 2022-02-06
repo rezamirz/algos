@@ -36,12 +36,21 @@ type Queue struct {
 	list  *list.List
 }
 
-func New() *Queue {
+func NewQueue() *Queue {
 	q := &Queue{
 		list:  list.New(),
 	}
 
 	return q
+}
+
+func (q *Queue) Front() interface{} {
+	e := q.list.Front()
+	if e == nil {
+		return nil
+	}
+
+	return e.Value
 }
 
 func (q *Queue) Pop() interface{} {

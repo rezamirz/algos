@@ -1,6 +1,6 @@
 /*
 
-deque.go
+stack.go
 
 MIT License
 
@@ -30,84 +30,44 @@ package util
 
 import (
 	"container/list"
-	"sync"
 )
 
-type Deque struct {
+type Stack struct {
 	list  *list.List
-	cond  *sync.Cond
-	mutex *sync.RWMutex
 }
 
-func NewDeque() *Deque {
-	q := &Deque{
+func NewStack() *Stack {
+	s := &Stack{
 		list:  list.New(),
-		mutex: &sync.RWMutex{},
 	}
 
-	q.cond = sync.NewCond(q.mutex)
 
-	return q
+	return s
 }
 
-func (q *Deque) PushFront(v interface{}) *list.Element {
-	q.mutex.Lock()
-	e := q.list.PushFront(v)
-	q.cond.Broadcast()
-	q.mutex.Unlock()
-
-	return e
+func (s *Stack) Push(v interface{}) {
+	s.list.PushFront(v)
 }
 
-func (q *Deque) PopFront() interface{} {
-	var e *list.Element
-
-	q.mutex.Lock()
-	for {
-		e = q.list.Front()
-		if e != nil {
-			break
-		}
-
-		q.cond.Wait()
+func (s *Stack) Top() interface{} {
+	e := s.list.Front()
+	if e == nil {
+		return nil
 	}
-
-	q.list.Remove(e)
-	q.cond.Broadcast()
-	q.mutex.Unlock()
 
 	return e.Value
 }
 
-func (q *Deque) PushBack(v interface{}) *list.Element {
-	q.mutex.Lock()
-	e := q.list.PushBack(v)
-	q.cond.Broadcast()
-	q.mutex.Unlock()
-
-	return e
-}
-
-func (q *Deque) PopBack() interface{} {
-	var e *list.Element
-
-	q.mutex.Lock()
-	for {
-		e = q.list.Back()
-		if e != nil {
-			break
-		}
-
-		q.cond.Wait()
+func (s *Stack) Pop() interface{} {
+	e := s.list.Front()
+	if e == nil {
+			return nil
 	}
 
-	q.list.Remove(e)
-	q.cond.Broadcast()
-	q.mutex.Unlock()
-
+	s.list.Remove(e)
 	return e.Value
 }
 
-func (q *Deque) Len() int {
-	return q.list.Len()
+func (s *Stack) Len() int {
+	return s.list.Len()
 }

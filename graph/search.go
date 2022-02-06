@@ -42,13 +42,13 @@ type SearchType int
 
 const (
 	Uknown SearchType = iota
-	DepthFirstSeach
+	DepthFirstSearch
 	BreathFirstSearch
 )
 
 func NewSearch(searchType SearchType) Search {
 	switch searchType {
-	case DepthFirstSeach:
+	case DepthFirstSearch:
 		return &DFS{}
 	case BreathFirstSearch:
 		return &BFS{}
@@ -106,19 +106,55 @@ func (dfs *DFS) PathTo(v int) []int {
 }
 
 type BFS struct {
-	q util.Queue
+	q *util.Queue
+	start  int    // Start node for the search
+	count  int    // Number of nodes connected to the start
+	marked []bool // is the node already marked / visited
+	pathTo []int  // Path to node v from start
 }
 
 func (bfs *BFS) DoSearch(g Graph, start, end int) {
+	bfs.start = start
+	bfs.q = util.NewQueue()
+	bfs.marked = make([]bool, g.GetNumVertices())
+	bfs.pathTo = make([]int, g.GetNumVertices())
 
+	bfs.q.Push(start)
+	for bfs.q.Len() > 0 {
+		v := bfs.q.Pop().(int)
+		neighbors := g.GetNeighbors(v)
+		for _, w := range neighbors {
+			if bfs.marked[w] {
+				continue
+			}
+			bfs.count++
+			bfs.marked[w] = true
+			bfs.pathTo[w] = v
+			bfs.q.Push(w)
+		}
+	}
 }
 
 func (bfs *BFS) Count() int {
-	return 0
+	return bfs.count
 }
 
 func (bfs *BFS) PathTo(v int) []int {
-	return nil
+	if !bfs.marked[v] {
+		return nil
+	}
+
+	path := []int{}
+	for {
+		path = append(path, v)
+		if v == bfs.start {
+			break
+		}
+		v = bfs.pathTo[v]
+	}
+
+	reverse(path)
+	return path
 }
 
 func reverse(arr []int) {

@@ -6,7 +6,7 @@ import (
 )
 
 func TestDequeFifo(t *testing.T) {
-	q := NewDequeu()
+	q := NewDeque()
 
 	q.PushBack(1)
 	q.PushBack(2)
@@ -34,7 +34,7 @@ func TestDequeFifo(t *testing.T) {
 }
 
 func TestDequeFilo(t *testing.T) {
-	q := NewDequeu()
+	q := NewDeque()
 
 	q.PushBack(1)
 	q.PushBack(2)
@@ -63,7 +63,7 @@ func TestDequeFilo(t *testing.T) {
 }
 
 func TestDequeFilo2(t *testing.T) {
-	q := NewDequeu()
+	q := NewDeque()
 
 	q.PushBack(1)
 	assert.Equal(t, 1, q.Len())

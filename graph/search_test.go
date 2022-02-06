@@ -66,9 +66,23 @@ func TestDFS_SmallGraph(t *testing.T) {
 	assert.Equal(t, 6, g.GetNumVertices())
 	assert.Equal(t, 8, g.GetNumEdges())
 
-	dfs := NewSearch(DepthFirstSeach)
+	dfs := NewSearch(DepthFirstSearch)
 	assert.NotEqual(t, nil, dfs)
 	dfs.DoSearch(g, 0, 3)
 	path := dfs.PathTo(3)
 	assert.Equal(t, 4, len(path))
+}
+
+
+func TestBFS_SmallGraph(t *testing.T) {
+	g, err := Load("data/tinyG.txt")
+	assert.NoError(t, err)
+	assert.Equal(t, 6, g.GetNumVertices())
+	assert.Equal(t, 8, g.GetNumEdges())
+
+	bfs := NewSearch(BreathFirstSearch)
+	assert.NotEqual(t, nil, bfs)
+	bfs.DoSearch(g, 0, 3)
+	path := bfs.PathTo(3)
+	assert.Equal(t, 3, len(path))
 }
