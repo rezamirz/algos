@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-package rbt
+package util
 
 import (
 	"fmt"
@@ -31,28 +31,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
-type IntComparator struct{}
-
-func (ic *IntComparator) Compare(k1, k2 interface{}) int {
-	i1, ok := k1.(*int)
-	if !ok {
-		panic(fmt.Errorf("Type assersion failed in IntComparator"))
-	}
-
-	i2, ok := k2.(*int)
-	if !ok {
-		panic(fmt.Errorf("Type assersion failed in IntComparator"))
-	}
-
-	if *i1 > *i2 {
-		return 1
-	} else if *i1 < *i2 {
-		return -1
-	}
-
-	return 0
-}
 
 type IntDumper struct{}
 

@@ -26,7 +26,7 @@ SOFTWARE.
 
 */
 
-package tracker
+package util
 
 import (
 	"errors"

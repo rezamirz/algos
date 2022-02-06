@@ -1,12 +1,12 @@
-package deque
+package util
 
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestFifo(t *testing.T) {
-	q := New()
+func TestDequeFifo(t *testing.T) {
+	q := NewDequeu()
 
 	q.PushBack(1)
 	q.PushBack(2)
@@ -33,8 +33,8 @@ func TestFifo(t *testing.T) {
 	assert.Equal(t, 0, q.Len())
 }
 
-func TestFilo(t *testing.T) {
-	q := New()
+func TestDequeFilo(t *testing.T) {
+	q := NewDequeu()
 
 	q.PushBack(1)
 	q.PushBack(2)
@@ -59,5 +59,16 @@ func TestFilo(t *testing.T) {
 		assert.Equal(t, i, v)
 	}
 
+	assert.Equal(t, 0, q.Len())
+}
+
+func TestDequeFilo2(t *testing.T) {
+	q := NewDequeu()
+
+	q.PushBack(1)
+	assert.Equal(t, 1, q.Len())
+
+	v := q.PopBack()
+	assert.Equal(t, 1, v)
 	assert.Equal(t, 0, q.Len())
 }

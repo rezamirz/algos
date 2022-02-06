@@ -31,7 +31,7 @@ SOFTWARE.
 
 */
 
-package pq
+package util
 
 type IHeap interface {
 	IsEmpty() bool
@@ -39,14 +39,6 @@ type IHeap interface {
 	Put(interface{})
 	Top() interface{}       // Returns min or max element of the heap if it is minheap or maxheap
 	DeleteTop() interface{} // Deletes min or max element of the heap if it is minheap or maxheap
-}
-
-type Comparator interface {
-	/*
-	 * Compares two keys and returns -1, 0, or 1.
-	 * The return value is used to sort the keys.
-	 */
-	Compare(k1, k2 interface{}) int
 }
 
 type Heap struct {

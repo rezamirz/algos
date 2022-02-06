@@ -31,20 +31,12 @@ SOFTWARE.
 
 */
 
-package rbt
+package util
 
 const (
 	Black = false
 	Red   = true
 )
-
-type Comparator interface {
-	/*
-	 * Compares two keys and returns -1, 0, or 1.
-	 * The return value is used to sort the keys.
-	 */
-	Compare(k1, k2 interface{}) int
-}
 
 type Dumper interface {
 	/*

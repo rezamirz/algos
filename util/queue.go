@@ -26,7 +26,7 @@ SOFTWARE.
 
 */
 
-package queue
+package util
 
 import (
 	"container/list"

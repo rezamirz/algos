@@ -1,6 +1,6 @@
 /*
 
-tracker.go
+deque.go
 
 MIT License
 
@@ -26,7 +26,7 @@ SOFTWARE.
 
 */
 
-package deque
+package util
 
 import (
 	"container/list"
@@ -39,7 +39,7 @@ type Deque struct {
 	mutex *sync.RWMutex
 }
 
-func New() *Deque {
+func NewDequeu() *Deque {
 	q := &Deque{
 		list:  list.New(),
 		mutex: &sync.RWMutex{},
