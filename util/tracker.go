@@ -132,7 +132,7 @@ func (tracker *Tracker) Untrack(id uint64) error {
 	}
 
 	index := id / 8
-	tracker.bitmap[index] = tracker.bitmap[index] & ^(1 << (index % 8))
+	tracker.bitmap[index] = tracker.bitmap[index] & ^(1 << (id % 8))
 
 	if id < tracker.nextLowcontig {
 		tracker.nextLowcontig = id
@@ -141,7 +141,8 @@ func (tracker *Tracker) Untrack(id uint64) error {
 	return nil
 }
 
-// NextLowcontig obtains lowest contiguous id that was tracked up to id.
+// NextLowcontig() returns lowest id that was not tracked yet.
+// Therefore, all the id < NextLowcontig() are all continuously tracked.
 func (tracker *Tracker) NextLowcontig() (uint64, error) {
 	if tracker.trackerType == FixedTracker && tracker.nextLowcontig >= tracker.size {
 		return 0, EOF

@@ -121,7 +121,8 @@ func TestTracker(t *testing.T) {
 			nextLowcontig, _ := tracker.NextLowcontig()
 			assert.Equal(t, i+1, nextLowcontig)
 
-			_ = tracker.IsTracked(i)
+			rc := tracker.IsTracked(i)
+			assert.Equal(t, true, rc)
 		}
 	}
 
@@ -140,7 +141,8 @@ func TestTracker(t *testing.T) {
 			nextLowcontig, _ := tracker.NextLowcontig()
 			assert.Equal(t, i+1, nextLowcontig)
 
-			_ = tracker.IsTracked(i)
+			rc := tracker.IsTracked(i)
+			assert.Equal(t, true, rc)
 		}
 	}
 
